@@ -16,15 +16,6 @@ body{
     background:#f5f5f5;
 }
 
-h1,h2,h3{
-    margin-top:10px;
-}
-
-input,select,button{
-    padding:8px;
-    margin:4px;
-}
-
 .store{
     background:white;
     border:1px solid #ddd;
@@ -52,6 +43,11 @@ input,select,button{
     margin-top:5px;
 }
 
+button,input,select{
+    padding:8px;
+    margin:4px;
+}
+
 </style>
 </head>
 
@@ -76,13 +72,13 @@ onkeyup="drawStores()"
 
 <hr>
 
-<h2>Trailer Summary</h2>
-<div id="trailers"></div>
+<h2>Unassigned Stores</h2>
+<div id="unassigned"></div>
 
 <hr>
 
-<h2>Unassigned Stores</h2>
-<div id="unassigned"></div>
+<h2>Trailer Summary</h2>
+<div id="trailers"></div>
 
 <hr>
 
@@ -116,7 +112,7 @@ function loadFile(e){
             workbook.SheetNames[0]
         ];
 
-        stores =
+        stores=
         XLSX.utils.sheet_to_json(sheet);
 
         stores.forEach(s=>{
@@ -125,11 +121,9 @@ function loadFile(e){
 
         drawStores();
         drawTrailers();
-
     };
 
     reader.readAsBinaryString(file);
-
 }
 
 function addTrailer(){
@@ -138,33 +132,28 @@ function addTrailer(){
 
     drawStores();
     drawTrailers();
-
 }
 
 function trailerOptions(current){
 
-    let html=`
-    <option
-    ${current==="Unassigned" ? "selected" : ""}
-    >
-    Unassigned
-    </option>
-    `;
+    let html=
+    `<option ${
+    current==="Unassigned"
+    ?"selected":""
+    }>Unassigned</option>`;
 
     for(let i=1;i<=trailerCount;i++){
 
-        html += `
-        <option
-        ${current===("Trailer "+i) ? "selected" : ""}
-        >
+        html+=`
+        <option ${
+        current===("Trailer "+i)
+        ?"selected":""
+        }>
         Trailer ${i}
-        </option>
-        `;
-
+        </option>`;
     }
 
     return html;
-
 }
 
 function drawStores(){
@@ -189,31 +178,19 @@ function drawStores(){
         ||
         String(store).includes(search);
 
-        if(!match){
-            return;
-        }
+        if(!match) return;
 
         let card=`
 
         <div class="store">
 
-        <b>${name}</b>
+        <b>${name}</b><br>
 
-        <br>
+        Store # ${store}<br>
 
-        Store # ${store}
+        Spaces: ${s.SPACES || 0}<br>
 
-        <br>
-
-        Spaces:
-        ${s.SPACES || 0}
-
-        <br>
-
-        Weight:
-        ${s.WEIGHT || 0}
-
-        <br>
+        Weight: ${s.WEIGHT || 0}<br>
 
         Assigned To:
         ${s.TRAILER}
@@ -227,18 +204,14 @@ function drawStores(){
         drawTrailers();
         "
         >
-
         ${trailerOptions(s.TRAILER)}
-
         </select>
 
         <a
         href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}"
         target="_blank"
         >
-
         📍 Map
-
         </a>
 
         </div>
@@ -257,7 +230,6 @@ function drawStores(){
 
     document.getElementById("unassigned").innerHTML =
     unassignedHtml;
-
 }
 
 function drawTrailers(){
@@ -271,6 +243,10 @@ function drawTrailers(){
         s=>s.TRAILER==="Trailer "+t
         );
 
+        if(trailerStores.length===0){
+            continue;
+        }
+
         let spaces=0;
         let weight=0;
 
@@ -281,50 +257,46 @@ function drawTrailers(){
 
             weight +=
             Number(s.WEIGHT) || 0;
-
         });
 
         let over=
         spaces>24 ||
         weight>35000;
 
+        let remainingSpaces=
+        (24-spaces).toFixed(1);
+
+        let remainingWeight=
+        Math.round(35000-weight);
+
         let details="";
 
         trailerStores.forEach(s=>{
 
             details += `
-
             <div class="storeItem">
 
-            <b>${s.NAME}</b>
+            <b>${s.NAME}</b><br>
 
-            <br>
+            Store # ${s["STORE #"]}<br>
 
-            Store # ${s["STORE #"]}
+            Spaces: ${s.SPACES}<br>
 
-            <br>
-
-            Spaces:
-            ${s.SPACES}
-
-            <br>
-
-            Weight:
-            ${s.WEIGHT}
+            Weight: ${s.WEIGHT}
 
             </div>
-
             `;
-
         });
 
         let route=
         "https://www.google.com/maps/dir/" +
         trailerStores
         .map(
-        x=>encodeURIComponent(
+        x=>
+        encodeURIComponent(
         x.ADDRESS || ""
-        ))
+        )
+        )
         .join("/");
 
         html += `
@@ -353,6 +325,20 @@ function drawTrailers(){
 
         <br><br>
 
+        Remaining:
+
+        <br>
+
+        ${remainingSpaces}
+        Spaces
+
+        <br>
+
+        ${remainingWeight}
+        lbs
+
+        <br><br>
+
         ${route}
 
         🗺 Open Route
@@ -364,15 +350,12 @@ function drawTrailers(){
         ${details}
 
         </div>
-
         `;
-
     }
 
     document
     .getElementById("trailers")
     .innerHTML=html;
-
 }
 
 drawTrailers();
