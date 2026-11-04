@@ -221,6 +221,133 @@ let spaces=0;
 let weight=0;
 let count=0;
 
+let trailerStores=stores.filter(
+s=>s.TRAILER==="Trailer "+t
+);
+
+trailerStores.forEach(s=>{
+
+spaces+=Number(s.SPACES)||0;
+
+weight+=Number(s.WEIGHT)||0;
+
+count++;
+
+});
+
+let over=
+spaces>24 ||
+weight>35000;
+
+let storeList="";
+
+trailerStores.forEach(s=>{
+
+storeList+=`
+<div style="
+margin-left:10px;
+padding:4px;
+border-left:2px solid #ddd;
+">
+<b>${s.NAME}</b>
+<br>
+Store # ${s["STORE #"]}
+<br>
+Spaces: ${s.SPACES}
+<br>
+Weight: ${s.WEIGHT}
+</div>
+`;
+
+});
+
+let routeAddresses=
+trailerStores
+.map(s=>encodeURIComponent(s.ADDRESS))
+.join("/");
+
+let routeUrl=
+"https://www.google.com/maps/dir/"
++
+routeAddresses;
+
+let farthestStore="";
+
+if(trailerStores.length){
+
+let sorted=[
+...trailerStores
+].sort(
+(a,b)=>
+(Number(b.WEIGHT)||0)
+-
+(Number(a.WEIGHT)||0)
+);
+
+farthestStore=
+sorted[0].NAME;
+
+}
+
+html+=`
+
+<div class="
+trailer
+summary
+${over?"over":""}
+">
+
+<h3>Trailer ${t}</h3>
+
+Stores: ${count}
+<br>
+
+Spaces:
+${spaces.toFixed(1)}
+/24
+
+<br>
+
+Weight:
+${Math.round(weight)}
+/35000 lbs
+
+<br><br>
+
+<b>Farthest Store:</b>
+${farthestStore}
+
+<br><br>
+
+${routeUrl}
+🗺 Open Route
+</a>
+
+<hr>
+
+${storeList}
+
+</div>
+
+`;
+
+}
+
+document.getElementById(
+'trailers'
+).innerHTML=html;
+
+}
+
+
+let html="";
+
+for(let t=1;t<=trailerCount;t++){
+
+let spaces=0;
+let weight=0;
+let count=0;
+
 stores.forEach(s=>{
 
 if(s.TRAILER==="Trailer "+t){
