@@ -1,27 +1,86 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Trailer Planner</title>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trailer Planner V3</title>
 <style>
-body{font-family:Arial;margin:0} .wrap{display:grid;grid-template-columns:1fr 2fr 1fr;gap:10px;padding:10px}
-.panel{border:1px solid #ccc;border-radius:8px;padding:10px;height:85vh;overflow:auto}
-.store{border:1px solid #ddd;padding:6px;margin:4px;border-radius:6px;background:#f8f8f8}
-.trailer{border:2px solid #666;padding:8px;margin-bottom:8px}
-button{padding:4px 8px}
+body{font-family:Arial;padding:10px}
+button{margin:3px;padding:8px}
+.trailer{
+border:1px solid #999;
+border-radius:8px;
+padding:10px;
+margin:8px 0;
+}
+.over{background:#ffd6d6}
 </style>
 </head>
 <body>
-<h2 style="padding:10px">Trailer Planner v1</h2>
-<div style="padding:10px">Upload Excel/CSV (future enhancement). Demo structure ready for GitHub Pages.</div>
-<div class="wrap">
-<div class="panel"><h3>Unassigned Stores</h3><div id="stores"></div></div>
-<div class="panel"><h3>Map Area</h3><p>Insert Google Maps API here.</p><p>Each store row can have a MAP button opening Google Maps.</p></div>
-<div class="panel"><div id="trailers"></div></div>
-</div>
+
+<h2>Trailer Planner V3</h2>
+
+<button onclick="addTrailer()">+ Add Trailer</button>
+
+<div id="trailers"></div>
+
 <script>
-const stores=[{name:'Gilbert',id:297,spaces:3,weight:2787,address:'899 N Val Vista Dr Gilbert AZ'},{name:'Tucson',id:19,spaces:2,weight:2854,address:'4639 E Speedway Blvd Tucson AZ'}];
-const trailers=[{name:'Trailer 1',spaces:0,weight:0},{name:'Trailer 2',spaces:0,weight:0}];
-function draw(){
- document.getElementById('stores').innerHTML=stores.map(s=>`<div class=store>${s.name} #${s.id}<br>${s.spaces} spaces | ${s.weight} lbs<br><a target=_blank href='https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.address)}'>MAP</a></div>`).join('');
- document.getElementById('trailers').innerHTML=trailers.map(t=>`<div class=trailer><b>${t.name}</b><br>${t.spaces}/24 spaces<br>${t.weight}/35000 lbs<br><button>Open Route</button></div>`).join('');
+let trailers=[
+{
+name:'Trailer 1',
+spaces:0,
+weight:0,
+limitS:24,
+limitW:35000
 }
+];
+
+function draw(){
+document.getElementById('trailers').innerHTML=
+trailers.map((t,i)=>`
+<div class="trailer ${(t.spaces>t.limitS||t.weight>t.limitW)?'over':''}">
+<b>${t.name}</b><br>
+${t.spaces}/${t.limitS} spaces<br>
+${t.weight}/${t.limitW} lbs<br><br>
+
+<button onclick="copyTrailer(${i})">
+Copy Trailer
+</button>
+
+<button onclick="removeTrailer(${i})">
+Delete Trailer
+</button>
+</div>
+`).join('');
+}
+
+function addTrailer(){
+trailers.push({
+name:'Trailer '+(trailers.length+1),
+spaces:0,
+weight:0,
+limitS:24,
+limitW:35000
+});
 draw();
-</script></body></html>
+}
+
+function copyTrailer(i){
+let t=JSON.parse(JSON.stringify(trailers[i]));
+t.name='Trailer '+(trailers.length+1);
+trailers.push(t);
+draw();
+}
+
+function removeTrailer(i){
+if(trailers.length>1){
+trailers.splice(i,1);
+draw();
+}
+}
+
+draw();
+</script>
+
+</body>
+</html>
