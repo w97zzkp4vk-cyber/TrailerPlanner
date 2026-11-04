@@ -3,83 +3,278 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Trailer Planner V3</title>
+<title>Trailer Planner Lite</title>
+
+https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.jsscript>
+
 <style>
-body{font-family:Arial;padding:10px}
-button{margin:3px;padding:8px}
-.trailer{
-border:1px solid #999;
-border-radius:8px;
-padding:10px;
-margin:8px 0;
+body{
+    font-family:Arial;
+    margin:10px;
 }
-.over{background:#ffd6d6}
+
+input,select,button{
+    padding:8px;
+    margin:4px;
+}
+
+.store{
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:8px;
+    margin-bottom:8px;
+}
+
+.trailer{
+    border:1px solid #666;
+    border-radius:8px;
+    padding:10px;
+    margin-bottom:10px;
+}
+
+.over{
+    background:#ffd6d6;
+}
+
+.summary{
+    background:#f5f5f5;
+}
 </style>
 </head>
+
 <body>
 
-<h2>Trailer Planner V3</h2>
+<h1>Trailer Planner Lite</h1>
 
-<button onclick="addTrailer()">+ Add Trailer</button>
+<input type="file" id="file">
 
+<button onclick="addTrailer()">
++ Add Trailer
+</button>
+
+<br>
+
+<input
+type="text"
+id="search"
+placeholder="Search Store # or Name"
+onkeyup="drawStores()"
+>
+
+<hr>
+
+<h2>Trailer Summary</h2>
 <div id="trailers"></div>
 
+<hr>
+
+<h2>Stores</h2>
+<div id="stores"></div>
+
 <script>
-let trailers=[
-{
-name:'Trailer 1',
-spaces:0,
-weight:0,
-limitS:24,
-limitW:35000
-}
+
+let stores=[];
+
+let trailerCount=4;
+
+document.getElementById('file')
+.addEventListener('change',loadFile);
+
+function loadFile(e){
+
+const file=e.target.files[0];
+
+const reader=new FileReader();
+
+reader.onload=function(evt){
+
+const workbook=XLSX.read(
+evt.target.result,
+{type:'binary'}
+);
+
+const sheet=
+workbook.Sheets[
+workbook.SheetNames[0]
 ];
 
-function draw(){
-document.getElementById('trailers').innerHTML=
-trailers.map((t,i)=>`
-<div class="trailer ${(t.spaces>t.limitS||t.weight>t.limitW)?'over':''}">
-<b>${t.name}</b><br>
-${t.spaces}/${t.limitS} spaces<br>
-${t.weight}/${t.limitW} lbs<br><br>
+stores=XLSX.utils.sheet_to_json(sheet);
 
-<button onclick="copyTrailer(${i})">
-Copy Trailer
-</button>
+stores.forEach(x=>{
+x.TRAILER="Unassigned";
+});
 
-<button onclick="removeTrailer(${i})">
-Delete Trailer
-</button>
-</div>
-`).join('');
+drawStores();
+drawTrailers();
+
+};
+
+reader.readAsBinaryString(file);
+
 }
 
 function addTrailer(){
-trailers.push({
-name:'Trailer '+(trailers.length+1),
-spaces:0,
-weight:0,
-limitS:24,
-limitW:35000
+
+trailerCount++;
+
+drawStores();
+drawTrailers();
+
+}
+
+function trailerOptions(current){
+
+let html=
+`<option
+${current==="Unassigned"?"selected":""}
+>
+Unassigned
+</option>`;
+
+for(let i=1;i<=trailerCount;i++){
+
+html+=`
+<option
+${current===("Trailer "+i)?
+"selected":""
+}>
+Trailer ${i}
+</option>`;
+}
+
+return html;
+}
+
+function drawStores(){
+
+let search=
+document
+.getElementById('search')
+.value
+.toLowerCase();
+
+let html="";
+
+stores.forEach((s,index)=>{
+
+let name=(s.NAME||"");
+let store=(s["STORE #"]||"");
+let address=(s.ADDRESS||"");
+
+let match=
+name.toLowerCase().includes(search)
+||
+String(store).includes(search);
+
+if(!match) return;
+
+html+=`
+<div class="store">
+
+<b>${name}</b>
+<br>
+
+Store # ${store}
+
+<br>
+
+Spaces:
+${s.SPACES||0}
+
+<br>
+
+Weight:
+${s.WEIGHT||0}
+
+<br><br>
+
+<select
+onchange="
+stores[${index}].TRAILER=this.value;
+drawTrailers();
+"
+>
+${trailerOptions(s.TRAILER)}
+</select>
+
+https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}
+📍 Map
+</a>
+
+</div>
+`;
+
 });
-draw();
+
+document.getElementById('stores').innerHTML=html;
+
 }
 
-function copyTrailer(i){
-let t=JSON.parse(JSON.stringify(trailers[i]));
-t.name='Trailer '+(trailers.length+1);
-trailers.push(t);
-draw();
+function drawTrailers(){
+
+let html="";
+
+for(let t=1;t<=trailerCount;t++){
+
+let spaces=0;
+let weight=0;
+let count=0;
+
+stores.forEach(s=>{
+
+if(s.TRAILER==="Trailer "+t){
+
+spaces+=Number(s.SPACES)||0;
+
+weight+=Number(s.WEIGHT)||0;
+
+count++;
+
 }
 
-function removeTrailer(i){
-if(trailers.length>1){
-trailers.splice(i,1);
-draw();
-}
+});
+
+let over=
+spaces>24 ||
+weight>35000;
+
+html+=`
+<div class="
+trailer
+summary
+${over?"over":""}
+">
+
+<b>Trailer ${t}</b>
+
+<br>
+
+Stores:
+${count}
+
+<br>
+
+Spaces:
+${spaces.toFixed(1)}
+/24
+
+<br>
+
+Weight:
+${Math.round(weight)}
+/35000 lbs
+
+</div>
+`;
+
 }
 
-draw();
+document.getElementById('trailers').innerHTML=html;
+
+}
+
+drawTrailers();
+
 </script>
 
 </body>
