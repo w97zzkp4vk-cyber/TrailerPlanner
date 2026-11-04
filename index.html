@@ -3,15 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Trailer Planner Lite</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">\</script>
 
 <style>
+
 body{
-    font-family:Arial;
+    font-family:Arial,sans-serif;
     margin:10px;
+    background:#f5f5f5;
+}
+
+h1,h2,h3{
+    margin-top:10px;
 }
 
 input,select,button{
@@ -20,6 +26,7 @@ input,select,button{
 }
 
 .store{
+    background:white;
     border:1px solid #ddd;
     border-radius:8px;
     padding:8px;
@@ -27,7 +34,8 @@ input,select,button{
 }
 
 .trailer{
-    border:1px solid #666;
+    background:white;
+    border:1px solid #888;
     border-radius:8px;
     padding:10px;
     margin-bottom:10px;
@@ -37,9 +45,13 @@ input,select,button{
     background:#ffd6d6;
 }
 
-.summary{
-    background:#f5f5f5;
+.storeItem{
+    margin-left:10px;
+    border-left:3px solid #ddd;
+    padding-left:8px;
+    margin-top:5px;
 }
+
 </style>
 </head>
 
@@ -69,282 +81,299 @@ onkeyup="drawStores()"
 
 <hr>
 
-<h2>Stores</h2>
+<h2>Unassigned Stores</h2>
+<div id="unassigned"></div>
+
+<hr>
+
+<h2>All Stores</h2>
 <div id="stores"></div>
 
 <script>
 
 let stores=[];
-
 let trailerCount=4;
 
-document.getElementById('file')
-.addEventListener('change',loadFile);
+document
+.getElementById("file")
+.addEventListener("change",loadFile);
 
 function loadFile(e){
 
-const file=e.target.files[0];
+    const file=e.target.files[0];
 
-const reader=new FileReader();
+    const reader=new FileReader();
 
-reader.onload=function(evt){
+    reader.onload=function(evt){
 
-const workbook=XLSX.read(
-evt.target.result,
-{type:'binary'}
-);
+        const workbook=XLSX.read(
+            evt.target.result,
+            {type:"binary"}
+        );
 
-const sheet=
-workbook.Sheets[
-workbook.SheetNames[0]
-];
+        const sheet=
+        workbook.Sheets[
+            workbook.SheetNames[0]
+        ];
 
-stores=XLSX.utils.sheet_to_json(sheet);
+        stores =
+        XLSX.utils.sheet_to_json(sheet);
 
-stores.forEach(x=>{
-x.TRAILER="Unassigned";
-});
+        stores.forEach(s=>{
+            s.TRAILER="Unassigned";
+        });
 
-drawStores();
-drawTrailers();
+        drawStores();
+        drawTrailers();
 
-};
+    };
 
-reader.readAsBinaryString(file);
+    reader.readAsBinaryString(file);
 
 }
 
 function addTrailer(){
 
-trailerCount++;
+    trailerCount++;
 
-drawStores();
-drawTrailers();
+    drawStores();
+    drawTrailers();
 
 }
 
 function trailerOptions(current){
 
-let html=
-`<option
-${current==="Unassigned"?"selected":""}
->
-Unassigned
-</option>`;
+    let html=`
+    <option
+    ${current==="Unassigned" ? "selected" : ""}
+    >
+    Unassigned
+    </option>
+    `;
 
-for(let i=1;i<=trailerCount;i++){
+    for(let i=1;i<=trailerCount;i++){
 
-html+=`
-<option
-${current===("Trailer "+i)?
-"selected":""
-}>
-Trailer ${i}
-</option>`;
-}
+        html += `
+        <option
+        ${current===("Trailer "+i) ? "selected" : ""}
+        >
+        Trailer ${i}
+        </option>
+        `;
 
-return html;
+    }
+
+    return html;
+
 }
 
 function drawStores(){
 
-let search=
-document
-.getElementById('search')
-.value
-.toLowerCase();
+    let search=
+    document
+    .getElementById("search")
+    .value
+    .toLowerCase();
 
-let html="";
+    let allHtml="";
+    let unassignedHtml="";
 
-stores.forEach((s,index)=>{
+    stores.forEach((s,index)=>{
 
-let name=(s.NAME||"");
-let store=(s["STORE #"]||"");
-let address=(s.ADDRESS||"");
+        let name=s.NAME || "";
+        let store=s["STORE #"] || "";
+        let address=s.ADDRESS || "";
 
-let match=
-name.toLowerCase().includes(search)
-||
-String(store).includes(search);
+        let match=
+        name.toLowerCase().includes(search)
+        ||
+        String(store).includes(search);
 
-if(!match) return;
+        if(!match){
+            return;
+        }
 
-html+=`
-<div class="store">
+        let card=`
 
-<b>${name}</b>
-<br>
+        <div class="store">
 
-Store # ${store}
+        <b>${name}</b>
 
-<br>
+        <br>
 
-Spaces:
-${s.SPACES||0}
+        Store # ${store}
 
-<br>
+        <br>
 
-Weight:
-${s.WEIGHT||0}
+        Spaces:
+        ${s.SPACES || 0}
 
-<br><br>
+        <br>
 
-<select
-onchange="
-stores[${index}].TRAILER=this.value;
-drawTrailers();
-"
->
-${trailerOptions(s.TRAILER)}
-</select>
+        Weight:
+        ${s.WEIGHT || 0}
 
-https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}
-📍 Map
-</a>
+        <br>
 
-</div>
-`;
+        Assigned To:
+        ${s.TRAILER}
 
-});
+        <br><br>
 
-document.getElementById('stores').innerHTML=html;
+        <select
+        onchange="
+        stores[${index}].TRAILER=this.value;
+        drawStores();
+        drawTrailers();
+        "
+        >
+
+        ${trailerOptions(s.TRAILER)}
+
+        </select>
+
+        <a
+        href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}"
+        target="_blank"
+        >
+
+        📍 Map
+
+        </a>
+
+        </div>
+        `;
+
+        allHtml += card;
+
+        if(s.TRAILER==="Unassigned"){
+            unassignedHtml += card;
+        }
+
+    });
+
+    document.getElementById("stores").innerHTML =
+    allHtml;
+
+    document.getElementById("unassigned").innerHTML =
+    unassignedHtml;
 
 }
 
 function drawTrailers(){
 
-let html="";
+    let html="";
 
-for(let t=1;t<=trailerCount;t++){
+    for(let t=1;t<=trailerCount;t++){
 
-let spaces=0;
-let weight=0;
-let count=0;
+        let trailerStores=
+        stores.filter(
+        s=>s.TRAILER==="Trailer "+t
+        );
 
-let trailerStores=stores.filter(
-s=>s.TRAILER==="Trailer "+t
-);
+        let spaces=0;
+        let weight=0;
 
-trailerStores.forEach(s=>{
+        trailerStores.forEach(s=>{
 
-spaces+=Number(s.SPACES)||0;
+            spaces +=
+            Number(s.SPACES) || 0;
 
-weight+=Number(s.WEIGHT)||0;
+            weight +=
+            Number(s.WEIGHT) || 0;
 
-count++;
+        });
 
-});
+        let over=
+        spaces>24 ||
+        weight>35000;
 
-let over=
-spaces>24 ||
-weight>35000;
+        let details="";
 
-let storeList="";
+        trailerStores.forEach(s=>{
 
-trailerStores.forEach(s=>{
+            details += `
 
-storeList+=`
-<div style="
-margin-left:10px;
-padding:4px;
-border-left:2px solid #ddd;
-">
-<b>${s.NAME}</b>
-<br>
-Store # ${s["STORE #"]}
-<br>
-Spaces: ${s.SPACES}
-<br>
-Weight: ${s.WEIGHT}
-</div>
-`;
+            <div class="storeItem">
 
-});
+            <b>${s.NAME}</b>
 
-let routeAddresses=
-trailerStores
-.map(s=>encodeURIComponent(s.ADDRESS))
-.join("/");
+            <br>
 
-let routeUrl=
-"https://www.google.com/maps/dir/"
-+
-routeAddresses;
+            Store # ${s["STORE #"]}
 
-let farthestStore="";
+            <br>
 
-if(trailerStores.length){
+            Spaces:
+            ${s.SPACES}
 
-let sorted=[
-...trailerStores
-].sort(
-(a,b)=>
-(Number(b.WEIGHT)||0)
--
-(Number(a.WEIGHT)||0)
+            <br>
 
-);
+            Weight:
+            ${s.WEIGHT}
 
-farthestStore=
-sorted[0].NAME;
+            </div>
 
-}
+            `;
 
-html+=`
+        });
 
-<div class="
-trailer
-summary
-${over?"over":""}
-">
+        let route=
+        "https://www.google.com/maps/dir/" +
+        trailerStores
+        .map(
+        x=>encodeURIComponent(
+        x.ADDRESS || ""
+        ))
+        .join("/");
 
-<h3>Trailer ${t}</h3>
+        html += `
 
-Stores: ${count}
-<br>
+        <div class="
+        trailer
+        ${over ? "over" : ""}
+        ">
 
-Spaces:
-${spaces.toFixed(1)}
-/24
+        <h3>Trailer ${t}</h3>
 
-<br>
+        Stores:
+        ${trailerStores.length}
 
-Weight:
-${Math.round(weight)}
-/35000 lbs
+        <br>
 
-<br><br>
+        Spaces:
+        ${spaces.toFixed(1)}
+        /24
 
-<b>Farthest Store:</b>
-${farthestStore}
+        <br>
 
-<br><br>
+        Weight:
+        ${Math.round(weight)}
+        /35000 lbs
 
-<a href="${routeUrl}" target="_blank">
-🗺 Open Route
-</a>
+        <br><br>
 
-<hr>
+        ${route}
 
-${storeList}
+        🗺 Open Route
 
-</div>
+        </a>
 
-`;
+        <hr>
+
+        ${details}
+
+        </div>
+
+        `;
+
+    }
+
+    document
+    .getElementById("trailers")
+    .innerHTML=html;
 
 }
-
-document.getElementById(
-'trailers'
-).innerHTML=html;
-
-}
-
-
-
-
-
-
 
 drawTrailers();
 
