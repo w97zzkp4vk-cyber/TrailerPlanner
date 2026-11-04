@@ -1,530 +1,2266 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Trailer Planner v6</title>
+<meta charset="UTF-8">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">\</script>
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1"
+>
+
+<title>Trailer Planner Pro</title>
+
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
+</script>
 
 <style>
 
-body{
-    font-family:Arial,sans-serif;
-    margin:10px;
-    background:#f5f5f5;
+*{
+    box-sizing:border-box;
 }
 
-button,input,select{
-    padding:8px;
-    margin:4px;
+body{
+    font-family:Arial,sans-serif;
+    margin:0;
+    padding:12px;
+    background:#f2f4f7;
+    color:#1f2937;
+}
+
+h1{
+    margin:0 0 12px;
+    font-size:26px;
+}
+
+h2{
+    font-size:20px;
+    margin:8px 0 12px;
+}
+
+h3{
+    margin:0 0 8px;
+}
+
+button,
+input{
+    font-size:16px;
+    padding:10px;
+    border-radius:7px;
+    border:1px solid #aab0b8;
+    margin:3px;
+}
+
+button{
+    cursor:pointer;
+    background:#ffffff;
+}
+
+button:active{
+    background:#e5e7eb;
+}
+
+.primaryButton{
+    color:#ffffff;
+    background:#1565c0;
+    border-color:#1565c0;
+    font-weight:bold;
+}
+
+.clusterButton{
+    color:#ffffff;
+    background:#2e7d32;
+    border-color:#2e7d32;
+    font-weight:bold;
+}
+
+.deleteButton{
+    color:#ffffff;
+    background:#c62828;
+    border-color:#c62828;
+}
+
+.removeButton{
+    color:#ffffff;
+    background:#c62828;
+    border-color:#c62828;
+}
+
+.toolbar{
+    background:#ffffff;
+    padding:10px;
+    border-radius:10px;
+    margin-bottom:12px;
+    border:1px solid #d4d8de;
+}
+
+.settingsRow{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:4px;
+    margin-top:8px;
+}
+
+.smallInput{
+    width:82px;
+}
+
+.weightInput{
+    width:115px;
+}
+
+.searchInput{
+    width:100%;
+    max-width:500px;
+    margin:8px 0;
+}
+
+.panel{
+    background:#ffffff;
+    border:1px solid #d4d8de;
+    border-radius:10px;
+    padding:12px;
+    margin-bottom:12px;
+}
+
+.assistantPanel{
+    border-left:6px solid #1565c0;
+}
+
+.assistantGrid{
+    display:grid;
+    grid-template-columns:repeat(
+        auto-fit,
+        minmax(190px,1fr)
+    );
+    gap:8px;
+}
+
+.assistantItem{
+    background:#f7f9fc;
+    border-radius:8px;
+    padding:10px;
+}
+
+.assistantTitle{
+    font-weight:bold;
+    margin-bottom:5px;
 }
 
 .store{
-    background:white;
-    border:1px solid #ddd;
-    border-radius:8px;
-    padding:8px;
+    background:#ffffff;
+    border:1px solid #d4d8de;
+    border-radius:9px;
+    padding:10px;
     margin-bottom:8px;
 }
 
-.trailer{
-    background:white;
-    border:1px solid #888;
-    border-radius:8px;
+.storeName{
+    font-size:17px;
+    font-weight:bold;
+}
+
+.storeAddress{
+    color:#555;
+    font-size:13px;
+    margin-top:4px;
+}
+
+.assignmentButtons{
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px;
+    margin-top:8px;
+}
+
+.assignmentButton{
+    background:#e3f2fd;
+    border-color:#64b5f6;
+    font-weight:bold;
+    min-width:48px;
+}
+
+.mapLink,
+.routeLink{
+    display:inline-block;
+    text-decoration:none;
+    color:#ffffff;
+    background:#1565c0;
+    border-radius:7px;
     padding:10px;
-    margin-bottom:10px;
+    margin:4px 2px;
+    font-weight:bold;
+}
+
+.trailer{
+    background:#ffffff;
+    border:2px solid #7b8794;
+    border-radius:10px;
+    padding:12px;
+    margin-bottom:14px;
 }
 
 .over{
-    background:#ffd6d6;
+    background:#ffe5e5;
+    border-color:#d32f2f;
+}
+
+.overBadge{
+    display:inline-block;
+    color:#ffffff;
+    background:#d32f2f;
+    border-radius:12px;
+    padding:5px 9px;
+    margin:5px 0;
+    font-weight:bold;
+}
+
+.capacityGrid{
+    display:grid;
+    grid-template-columns:repeat(
+        auto-fit,
+        minmax(145px,1fr)
+    );
+    gap:7px;
+    margin:10px 0;
+}
+
+.capacityBox{
+    background:#f4f6f8;
+    padding:9px;
+    border-radius:7px;
+}
+
+.regionSummary{
+    background:#eef5ff;
+    border-left:5px solid #1565c0;
+    border-radius:7px;
+    padding:9px;
+    margin:9px 0;
+}
+
+.outlierSummary{
+    background:#fff3cd;
+    border-left:5px solid #ff9800;
+    border-radius:7px;
+    padding:9px;
+    margin:9px 0;
 }
 
 .storeItem{
-    margin-left:10px;
-    border-left:3px solid #ddd;
-    padding-left:8px;
+    border-left:4px solid #90a4ae;
+    background:#f8fafc;
+    border-radius:7px;
+    padding:9px;
+    margin-top:8px;
+}
+
+.outlierStore{
+    border:3px solid #ff9800;
+    background:#fff8e8;
+}
+
+.outlierBadge{
+    display:inline-block;
+    color:#111111;
+    background:#ffb74d;
+    border-radius:12px;
+    padding:4px 8px;
     margin-top:5px;
-}
-
-.assistantGood{
-    color:green;
     font-weight:bold;
 }
 
-.assistantWarn{
-    color:red;
-    font-weight:bold;
+.stopControls{
+    margin-top:8px;
+}
+
+.stopControls button{
+    min-width:45px;
+}
+
+.emptyMessage{
+    color:#666666;
+    font-style:italic;
+    padding:8px;
+}
+
+.sectionCount{
+    font-size:14px;
+    color:#555555;
+}
+
+hr{
+    border:0;
+    border-top:1px solid #dfe3e8;
+    margin:15px 0;
+}
+
+@media(max-width:600px){
+
+    body{
+        padding:8px;
+    }
+
+    h1{
+        font-size:23px;
+    }
+
+    button,
+    input{
+        font-size:16px;
+    }
+
+    .assignmentButton{
+        flex:1;
+        min-width:55px;
+    }
+
 }
 
 </style>
+
 </head>
 
 <body>
 
 <h1>Trailer Planner Pro</h1>
 
-<div class="trailer">
+<div class="toolbar">
+
+<input
+type="file"
+id="file"
+accept=".xlsx,.xls,.csv"
+>
+
+<div class="settingsRow">
+
+<label for="targetTrailers">
+Target trailers:
+</label>
+
+<input
+id="targetTrailers"
+class="smallInput"
+type="number"
+value="2"
+min="1"
+step="1"
+>
+
+<button
+class="clusterButton"
+onclick="smartCluster()"
+>
+🧠 Smart Cluster
+</button>
+
+<button
+class="primaryButton"
+onclick="addTrailer()"
+>
++ Add Trailer
+</button>
+
+</div>
+
+<input
+id="search"
+class="searchInput"
+type="text"
+placeholder="Search store number, name, city, or address"
+oninput="drawStores()"
+>
+
+</div>
+
+<div class="panel assistantPanel">
 
 <h2>🚛 Route Assistant</h2>
 
 <div id="assistantContent">
-
-Upload a file to begin analysis.
-
+Upload an Excel file to begin.
 </div>
 
 </div>
 
-<input type="file" id="file">
-
-<button onclick="addTrailer()">
-+ Add Trailer
-</button>
-
-<br>
-
-<input
-type="text"
-id="search"
-placeholder="Search Store # or Name"
-onkeyup="drawStores()"
+<div
+id="unassignedPanel"
+class="panel"
 >
 
-<hr>
-
-<h2>Unassigned Stores</h2>
+<h2>
+Unassigned Stores
+<span
+id="unassignedCount"
+class="sectionCount"
+></span>
+</h2>
 
 <div id="unassigned"></div>
 
-<hr>
+</div>
+
+<div class="panel">
 
 <h2>Trailers</h2>
 
 <div id="trailers"></div>
 
-<hr>
-
-<h2>All Stores</h2>
-
-<div id="stores"></div>
+</div>
 
 <script>
 
 let stores=[];
-let trailerCount=4;
+
+let trailerCount=1;
+
+let trailerConfigs={};
 
 document
 .getElementById("file")
-.addEventListener("change",loadFile);
-
-function loadFile(e){
-
-const file=e.target.files[0];
-
-const reader=new FileReader();
-
- reader.onload=function(evt){
-
-const workbook=XLSX.read(
-evt.target.result,
-{type:"binary"}
+.addEventListener(
+    "change",
+    loadFile
 );
 
-const sheet=
-workbook.Sheets[
-workbook.SheetNames[0]
-];
+function getTrailerConfig(number){
 
-stores=
-XLSX.utils.sheet_to_json(sheet);
+    if(!trailerConfigs[number]){
 
-stores.forEach(s=>{
-s.TRAILER="Unassigned";
-});
+        trailerConfigs[number]={
+            spaceLimit:24,
+            weightLimit:35000
+        };
 
-drawStores();
-drawTrailers();
-drawAssistant();
+    }
 
-};
+    return trailerConfigs[number];
 
-reader.readAsBinaryString(file);
+}
+
+function loadFile(event){
+
+    const file=
+    event.target.files[0];
+
+    if(!file){
+        return;
+    }
+
+    const reader=
+    new FileReader();
+
+    reader.onload=function(loadEvent){
+
+        try{
+
+            const workbook=
+            XLSX.read(
+                loadEvent.target.result,
+                {
+                    type:"array"
+                }
+            );
+
+            const sheet=
+            workbook.Sheets[
+                workbook.SheetNames[0]
+            ];
+
+            stores=
+            XLSX.utils.sheet_to_json(
+                sheet,
+                {
+                    defval:""
+                }
+            );
+
+            stores.forEach(
+                (store,index)=>{
+
+                    store.TRAILER=
+                    "Unassigned";
+
+                    store.ORIGINAL_INDEX=
+                    index;
+
+                }
+            );
+
+            drawEverything();
+
+        }catch(error){
+
+            alert(
+                "The spreadsheet could not be read. " +
+                "Please verify that the first sheet contains " +
+                "NAME, STORE #, SPACES, WEIGHT, and ADDRESS columns."
+            );
+
+            console.error(error);
+
+        }
+
+    };
+
+    reader.readAsArrayBuffer(file);
+
+}
+
+function drawEverything(){
+
+    drawStores();
+    drawTrailers();
+    drawAssistant();
 
 }
 
 function addTrailer(){
 
-trailerCount++;
+    trailerCount++;
 
-drawStores();
-drawTrailers();
-drawAssistant();
+    getTrailerConfig(
+        trailerCount
+    );
 
-}
+    document
+    .getElementById(
+        "targetTrailers"
+    )
+    .value=
+    trailerCount;
 
-function trailerOptions(current){
-
-let html=
-`<option ${
-current==="Unassigned"
-?"selected":""
-}>Unassigned</option>`;
-
-for(let i=1;i<=trailerCount;i++){
-
-html+=`
-<option ${
-current===("Trailer "+i)
-?"selected":""
-}>
-Trailer ${i}
-</option>`;
+    drawEverything();
 
 }
 
-return html;
+function deleteTrailer(number){
+
+    const confirmed=
+    confirm(
+        "Delete Trailer "+
+        number+
+        "? Its stores will return to Unassigned."
+    );
+
+    if(!confirmed){
+        return;
+    }
+
+    stores.forEach(store=>{
+
+        if(
+            store.TRAILER===
+            "Trailer "+number
+        ){
+
+            store.TRAILER=
+            "Unassigned";
+
+        }else if(
+            store.TRAILER
+            .startsWith("Trailer ")
+        ){
+
+            const currentNumber=
+            Number(
+                store.TRAILER.replace(
+                    "Trailer ",
+                    ""
+                )
+            );
+
+            if(currentNumber>number){
+
+                store.TRAILER=
+                "Trailer "+
+                (currentNumber-1);
+
+            }
+
+        }
+
+    });
+
+    for(
+        let t=number;
+        t<trailerCount;
+        t++
+    ){
+
+        trailerConfigs[t]=
+        trailerConfigs[t+1];
+
+    }
+
+    delete trailerConfigs[
+        trailerCount
+    ];
+
+    trailerCount=
+    Math.max(
+        1,
+        trailerCount-1
+    );
+
+    document
+    .getElementById(
+        "targetTrailers"
+    )
+    .value=
+    trailerCount;
+
+    drawEverything();
+
+}
+
+function getCity(address){
+
+    if(!address){
+        return "Unknown";
+    }
+
+    const match=
+    String(address).match(
+        /,\s*([^,]+),\s*[A-Z]{2}\s*,\s*\d{5}(?:-\d{4})?\s*$/i
+    );
+
+    if(match){
+        return match[1].trim();
+    }
+
+    return "Unknown";
+
+}
+
+function getRegion(address){
+
+    const city=
+    getCity(address)
+    .toLowerCase();
+
+    const regions={
+
+        "Tucson":[
+            "tucson"
+        ],
+
+        "East Valley":[
+            "gilbert",
+            "mesa",
+            "chandler",
+            "tempe",
+            "queen creek"
+        ],
+
+        "Scottsdale / North Valley":[
+            "scottsdale",
+            "paradise valley",
+            "cave creek"
+        ],
+
+        "Phoenix":[
+            "phoenix"
+        ],
+
+        "West Valley":[
+            "glendale",
+            "goodyear",
+            "buckeye",
+            "avondale",
+            "surprise",
+            "peoria"
+        ]
+
+    };
+
+    for(const region in regions){
+
+        if(
+            regions[region]
+            .includes(city)
+        ){
+
+            return region;
+
+        }
+
+    }
+
+    return getCity(address);
+
+}
+
+function analyzeTrailerCluster(
+    trailerStores
+){
+
+    const regionCounts={};
+
+    trailerStores.forEach(store=>{
+
+        const region=
+        getRegion(
+            store.ADDRESS
+        );
+
+        regionCounts[region]=
+        (
+            regionCounts[region]
+            ||0
+        )+1;
+
+    });
+
+    const sortedRegions=
+    Object.entries(
+        regionCounts
+    )
+    .sort(
+        (a,b)=>b[1]-a[1]
+    );
+
+    if(
+        sortedRegions.length===0
+    ){
+
+        return{
+            mainRegion:"",
+            outliers:[],
+            regionCounts:{}
+        };
+
+    }
+
+    const mainRegion=
+    sortedRegions[0][0];
+
+    const mainCount=
+    sortedRegions[0][1];
+
+    const totalStores=
+    trailerStores.length;
+
+    const mainShare=
+    mainCount/totalStores;
+
+    const phoenixMetroRegions=[
+        "East Valley",
+        "Scottsdale / North Valley",
+        "Phoenix",
+        "West Valley"
+    ];
+
+    const mainIsPhoenixMetro=
+    phoenixMetroRegions.includes(
+        mainRegion
+    );
+
+    const outliers=
+    trailerStores.filter(store=>{
+
+        const storeRegion=
+        getRegion(
+            store.ADDRESS
+        );
+
+        const regionCount=
+        regionCounts[
+            storeRegion
+        ]||0;
+
+        if(
+            storeRegion===
+            mainRegion
+        ){
+
+            return false;
+
+        }
+
+        if(regionCount===1){
+            return true;
+        }
+
+        if(
+            mainIsPhoenixMetro
+            &&
+            storeRegion==="Tucson"
+        ){
+
+            return true;
+
+        }
+
+        if(
+            mainRegion==="Tucson"
+            &&
+            phoenixMetroRegions
+            .includes(storeRegion)
+        ){
+
+            return true;
+
+        }
+
+        if(
+            mainIsPhoenixMetro
+            &&
+            phoenixMetroRegions
+            .includes(storeRegion)
+            &&
+            regionCount>=2
+        ){
+
+            return false;
+
+        }
+
+        if(
+            mainShare>=0.60
+            &&
+            regionCount<mainCount
+        ){
+
+            return true;
+
+        }
+
+        return false;
+
+    });
+
+    return{
+        mainRegion,
+        outliers,
+        regionCounts
+    };
+
+}
+
+function assignStore(
+    index,
+    trailerNumber
+){
+
+    stores[index].TRAILER=
+    "Trailer "+
+    trailerNumber;
+
+    drawEverything();
+
+}
+
+function trailerButtons(index){
+
+    let html="";
+
+    for(
+        let t=1;
+        t<=trailerCount;
+        t++
+    ){
+
+        html+=`
+
+        <button
+        class="assignmentButton"
+        onclick="assignStore(
+            ${index},
+            ${t}
+        )"
+        >
+        T${t}
+        </button>
+
+        `;
+
+    }
+
+    return html;
+
+}
+
+function removeStore(storeNumber){
+
+    const store=
+    stores.find(item=>
+        String(item["STORE #"])===
+        String(storeNumber)
+    );
+
+    if(store){
+
+        store.TRAILER=
+        "Unassigned";
+
+        drawEverything();
+
+    }
+
+}
+
+function moveUp(
+    trailerName,
+    position
+){
+
+    const trailerStores=
+    stores.filter(store=>
+        store.TRAILER===
+        trailerName
+    );
+
+    if(position<=0){
+        return;
+    }
+
+    const current=
+    trailerStores[position];
+
+    const previous=
+    trailerStores[position-1];
+
+    const currentIndex=
+    stores.indexOf(current);
+
+    const previousIndex=
+    stores.indexOf(previous);
+
+    [
+        stores[currentIndex],
+        stores[previousIndex]
+    ]=[
+        stores[previousIndex],
+        stores[currentIndex]
+    ];
+
+    drawEverything();
+
+}
+
+function moveDown(
+    trailerName,
+    position
+){
+
+    const trailerStores=
+    stores.filter(store=>
+        store.TRAILER===
+        trailerName
+    );
+
+    if(
+        position>=
+        trailerStores.length-1
+    ){
+
+        return;
+
+    }
+
+    const current=
+    trailerStores[position];
+
+    const next=
+    trailerStores[position+1];
+
+    const currentIndex=
+    stores.indexOf(current);
+
+    const nextIndex=
+    stores.indexOf(next);
+
+    [
+        stores[currentIndex],
+        stores[nextIndex]
+    ]=[
+        stores[nextIndex],
+        stores[currentIndex]
+    ];
+
+    drawEverything();
+
+}
+
+function buildStoreCard(
+    store,
+    index
+){
+
+    const address=
+    store.ADDRESS||"";
+
+    return`
+
+    <div class="store">
+
+    <div class="storeName">
+    ${store.NAME||"Unnamed Store"}
+    </div>
+
+    Store #:
+    ${store["STORE #"]||""}
+
+    <br>
+
+    City:
+    ${getCity(address)}
+
+    <br>
+
+    Region:
+    ${getRegion(address)}
+
+    <br>
+
+    Spaces:
+    ${Number(store.SPACES)||0}
+
+    <br>
+
+    Weight:
+    ${Number(store.WEIGHT)||0}
+    lbs
+
+    <div class="storeAddress">
+    ${address}
+    </div>
+
+    <div class="assignmentButtons">
+
+    ${trailerButtons(index)}
+
+    <a
+    class="mapLink"
+    target="_blank"
+    href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}"
+    >
+    📍 Map
+    </a>
+
+    </div>
+
+    </div>
+
+    `;
 
 }
 
 function drawStores(){
 
-let search=
-document
-.getElementById("search")
-.value
-.toLowerCase();
+    const search=
+    document
+    .getElementById("search")
+    .value
+    .trim()
+    .toLowerCase();
 
-let allHtml="";
-let unassignedHtml="";
+    let unassignedHtml="";
 
-stores.forEach((s,index)=>{
+    let count=0;
 
-let name=s.NAME || "";
-let store=s["STORE #"] || "";
-let address=s.ADDRESS || "";
+    stores.forEach(
+        (store,index)=>{
 
-let match=
-name.toLowerCase().includes(search)
-||
-String(store).includes(search);
+            if(
+                store.TRAILER!==
+                "Unassigned"
+            ){
 
-if(!match){
-return;
-}
+                return;
 
-let card=`
+            }
 
-<div class="store">
+            const searchable=
+            [
+                store.NAME,
+                store["STORE #"],
+                store.ADDRESS,
+                getCity(
+                    store.ADDRESS
+                ),
+                getRegion(
+                    store.ADDRESS
+                )
+            ]
+            .join(" ")
+            .toLowerCase();
 
-<b>${name}</b><br>
+            if(
+                search
+                &&
+                !searchable.includes(
+                    search
+                )
+            ){
 
-Store # ${store}<br>
+                return;
 
-Spaces: ${s.SPACES || 0}<br>
+            }
 
-Weight: ${s.WEIGHT || 0}<br>
+            count++;
 
-Assigned To:
-${s.TRAILER}
+            unassignedHtml+=
+            buildStoreCard(
+                store,
+                index
+            );
 
-<br><br>
+        }
+    );
 
-<select
-onchange="
-stores[${index}].TRAILER=this.value;
-drawStores();
-drawTrailers();
-drawAssistant();
-"
->
+    document
+    .getElementById(
+        "unassignedCount"
+    )
+    .textContent=
+    "("+count+")";
 
-${trailerOptions(s.TRAILER)}
-
-</select>
-
-"
-target="_blank"
->
-
-📍 Map
-
-</a>
-
-</div>
-
-`;
-
-allHtml+=card;
-
-if(s.TRAILER==="Unassigned"){
-unassignedHtml+=card;
-}
-
-});
-
-document.getElementById(
-"stores"
-).innerHTML=allHtml;
-
-document.getElementById(
-"unassigned"
-).innerHTML=unassignedHtml;
+    document
+    .getElementById(
+        "unassigned"
+    )
+    .innerHTML=
+    unassignedHtml
+    ||
+    `<div class="emptyMessage">
+    No unassigned stores.
+    </div>`;
 
 }
 
- function drawTrailers(){
+function smartCluster(){
 
-let html="";
+    if(stores.length===0){
 
-for(let t=1;t<=trailerCount;t++){
+        alert(
+            "Upload an Excel file first."
+        );
 
-let trailerStores=
-stores.filter(
-s=>s.TRAILER==="Trailer "+t
-);
+        return;
 
-if(trailerStores.length===0){
-continue;
+    }
+
+    const targetTrailers=
+    Math.max(
+        1,
+        Number(
+            document
+            .getElementById(
+                "targetTrailers"
+            )
+            .value
+        )||1
+    );
+
+    trailerCount=
+    targetTrailers;
+
+    for(
+        let t=1;
+        t<=trailerCount;
+        t++
+    ){
+
+        getTrailerConfig(t);
+
+    }
+
+    stores.forEach(store=>{
+
+        store.TRAILER=
+        "Unassigned";
+
+    });
+
+    const trailerSpaces={};
+
+    const trailerWeights={};
+
+    const trailerRegions={};
+
+    for(
+        let t=1;
+        t<=trailerCount;
+        t++
+    ){
+
+        trailerSpaces[t]=0;
+
+        trailerWeights[t]=0;
+
+        trailerRegions[t]={};
+
+    }
+
+    const regionTotals={};
+
+    stores.forEach(store=>{
+
+        const region=
+        getRegion(
+            store.ADDRESS
+        );
+
+        regionTotals[region]=
+        (
+            regionTotals[region]
+            ||0
+        )+1;
+
+    });
+
+    const sortedStores=
+    [...stores]
+    .sort((a,b)=>{
+
+        const regionA=
+        getRegion(a.ADDRESS);
+
+        const regionB=
+        getRegion(b.ADDRESS);
+
+        const regionDifference=
+        (
+            regionTotals[regionB]
+            ||0
+        )
+        -
+        (
+            regionTotals[regionA]
+            ||0
+        );
+
+        if(regionDifference!==0){
+
+            return regionDifference;
+
+        }
+
+        const spacesDifference=
+        (
+            Number(b.SPACES)||0
+        )
+        -
+        (
+            Number(a.SPACES)||0
+        );
+
+        if(spacesDifference!==0){
+
+            return spacesDifference;
+
+        }
+
+        return(
+            (Number(b.WEIGHT)||0)
+            -
+            (Number(a.WEIGHT)||0)
+        );
+
+    });
+
+    const couldNotAssign=[];
+
+    sortedStores.forEach(store=>{
+
+        const storeSpaces=
+        Number(store.SPACES)||0;
+
+        const storeWeight=
+        Number(store.WEIGHT)||0;
+
+        const storeRegion=
+        getRegion(
+            store.ADDRESS
+        );
+
+        let bestTrailer=null;
+
+        let bestScore=
+        -Infinity;
+
+        for(
+            let t=1;
+            t<=trailerCount;
+            t++
+        ){
+
+            const config=
+            getTrailerConfig(t);
+
+            const newSpaces=
+            trailerSpaces[t]
+            +
+            storeSpaces;
+
+            const newWeight=
+            trailerWeights[t]
+            +
+            storeWeight;
+
+            const fits=
+            newSpaces<=
+            config.spaceLimit
+            &&
+            newWeight<=
+            config.weightLimit;
+
+            /*
+            Capacity is mandatory.
+            A store is never assigned
+            if it exceeds either limit.
+            */
+
+            if(!fits){
+                continue;
+            }
+
+            const sameRegionCount=
+            trailerRegions[t][
+                storeRegion
+            ]||0;
+
+            const spaceUtilization=
+            newSpaces/
+            config.spaceLimit;
+
+            const weightUtilization=
+            newWeight/
+            config.weightLimit;
+
+            const utilization=
+            (
+                spaceUtilization
+                +
+                weightUtilization
+            )/2;
+
+            const balanceDifference=
+            Math.abs(
+                spaceUtilization
+                -
+                weightUtilization
+            );
+
+            /*
+            Proximity is considered only
+            after capacity has been verified.
+            */
+
+            const proximityScore=
+            sameRegionCount*100;
+
+            const utilizationScore=
+            utilization*20;
+
+            const balancePenalty=
+            balanceDifference*5;
+
+            const score=
+            proximityScore
+            +
+            utilizationScore
+            -
+            balancePenalty;
+
+            if(score>bestScore){
+
+                bestScore=
+                score;
+
+                bestTrailer=t;
+
+            }
+
+        }
+
+        if(bestTrailer===null){
+
+            couldNotAssign.push(
+                store
+            );
+
+            return;
+
+        }
+
+        store.TRAILER=
+        "Trailer "+
+        bestTrailer;
+
+        trailerSpaces[
+            bestTrailer
+        ]+=storeSpaces;
+
+        trailerWeights[
+            bestTrailer
+        ]+=storeWeight;
+
+        trailerRegions[
+            bestTrailer
+        ][storeRegion]=
+        (
+            trailerRegions[
+                bestTrailer
+            ][storeRegion]
+            ||0
+        )+1;
+
+    });
+
+    drawEverything();
+
+    if(
+        couldNotAssign.length>0
+    ){
+
+        const names=
+        couldNotAssign
+        .map(store=>
+            store.NAME
+        )
+        .join(", ");
+
+        alert(
+            couldNotAssign.length+
+            " store(s) could not fit within the selected trailer capacities: "+
+            names+
+            ". Increase a trailer capacity or add another trailer."
+        );
+
+    }
+
 }
 
-let spaces=0;
-let weight=0;
+function updateTrailerSpaceLimit(
+    trailerNumber,
+    value
+){
 
-trailerStores.forEach(s=>{
+    getTrailerConfig(
+        trailerNumber
+    )
+    .spaceLimit=
+    Math.max(
+        1,
+        Number(value)||24
+    );
 
-spaces+=Number(s.SPACES)||0;
-weight+=Number(s.WEIGHT)||0;
-
-});
-
-let remainingSpaces=
-(24-spaces).toFixed(1);
-
-let remainingWeight=
-Math.round(35000-weight);
-
-let over=
-spaces>24 ||
-weight>35000;
-
-let details="";
-
-trailerStores.forEach(s=>{
-
-details+=`
-
-<div class="storeItem">
-
-<b>${s.NAME}</b><br>
-
-Store # ${s["STORE #"]}<br>
-
-Spaces: ${s.SPACES}<br>
-
-Weight: ${s.WEIGHT}
-
-</div>
-
-`;
-
-});
-
-let route=
-"https://www.google.com/maps/dir/" +
-trailerStores
-.map(
-x=>encodeURIComponent(
-x.ADDRESS||""
-)
-)
-.join("/");
-
-html+=`
-
-<div class="
-trailer
-${over?"over":""}
-">
-
-<h3>Trailer ${t}</h3>
-
-Stores:
-${trailerStores.length}
-
-<br>
-
-Spaces:
-${spaces.toFixed(1)}
-/24
-
-<br>
-
-Weight:
-${Math.round(weight)}
-/35000 lbs
-
-<br><br>
-
-Remaining:
-
-<br>
-
-${remainingSpaces}
-Spaces
-
-<br>
-
-${remainingWeight}
-lbs
-
-<br><br>
-
-${route}
-
-🗺 Open Route
-
-</a>
-
-<hr>
-
-${details}
-
-</div>
-
-`;
+    drawEverything();
 
 }
 
-document
-.getElementById("trailers")
-.innerHTML=html;
+function updateTrailerWeightLimit(
+    trailerNumber,
+    value
+){
+
+    getTrailerConfig(
+        trailerNumber
+    )
+    .weightLimit=
+    Math.max(
+        1,
+        Number(value)||35000
+    );
+
+    drawEverything();
+
+}
+
+function drawTrailers(){
+
+    let html="";
+
+    for(
+        let t=1;
+        t<=trailerCount;
+        t++
+    ){
+
+        const config=
+        getTrailerConfig(t);
+
+        const trailerName=
+        "Trailer "+t;
+
+        const trailerStores=
+        stores.filter(store=>
+            store.TRAILER===
+            trailerName
+        );
+
+        let spaces=0;
+
+        let weight=0;
+
+        trailerStores.forEach(store=>{
+
+            spaces+=
+            Number(store.SPACES)||0;
+
+            weight+=
+            Number(store.WEIGHT)||0;
+
+        });
+
+        const over=
+        spaces>
+        config.spaceLimit
+        ||
+        weight>
+        config.weightLimit;
+
+        const remainingSpaces=
+        config.spaceLimit
+        -
+        spaces;
+
+        const remainingWeight=
+        config.weightLimit
+        -
+        weight;
+
+        const analysis=
+        analyzeTrailerCluster(
+            trailerStores
+        );
+
+        const outlierNumbers=
+        new Set(
+            analysis.outliers
+            .map(store=>
+                String(
+                    store["STORE #"]
+                )
+            )
+        );
+
+        let regionHtml="";
+
+        Object.entries(
+            analysis.regionCounts
+        )
+        .sort(
+            (a,b)=>b[1]-a[1]
+        )
+        .forEach(
+            ([region,count])=>{
+
+                regionHtml+=
+                `${region}: ${count}<br>`;
+
+            }
+        );
+
+        let outlierSummary="";
+
+        if(
+            analysis.outliers
+            .length>0
+        ){
+
+            outlierSummary=`
+
+            <div class="outlierSummary">
+
+            <b>
+            ⚠ Possible Geographic Outliers
+            </b>
+
+            <br>
+
+            Main cluster:
+            ${analysis.mainRegion}
+
+            <br><br>
+
+            ${
+                analysis.outliers
+                .map(store=>
+                    `${store.NAME} #${store["STORE #"]}`
+                )
+                .join("<br>")
+            }
+
+            <br><br>
+
+            <small>
+            Capacity was prioritized first.
+            Review these stores before dispatch.
+            </small>
+
+            </div>
+
+            `;
+
+        }
+
+        let details="";
+
+        trailerStores.forEach(
+            (store,index)=>{
+
+                const isOutlier=
+                outlierNumbers.has(
+                    String(
+                        store["STORE #"]
+                    )
+                );
+
+                details+=`
+
+                <div class="
+                storeItem
+                ${
+                    isOutlier
+                    ?
+                    "outlierStore"
+                    :
+                    ""
+                }
+                ">
+
+                <div class="storeName">
+
+                ${index+1}.
+                ${store.NAME}
+
+                </div>
+
+                Store #:
+                ${store["STORE #"]}
+
+                <br>
+
+                City:
+                ${getCity(
+                    store.ADDRESS
+                )}
+
+                <br>
+
+                Region:
+                ${getRegion(
+                    store.ADDRESS
+                )}
+
+                <br>
+
+                Spaces:
+                ${Number(
+                    store.SPACES
+                )||0}
+
+                <br>
+
+                Weight:
+                ${Number(
+                    store.WEIGHT
+                )||0}
+                lbs
+
+                ${
+                    isOutlier
+                    ?
+                    `
+                    <br>
+                    <span class="outlierBadge">
+                    ⚠ Possible Outlier
+                    </span>
+                    `
+                    :
+                    ""
+                }
+
+                <div class="stopControls">
+
+                <button
+                onclick="moveUp(
+                    '${trailerName}',
+                    ${index}
+                )"
+                >
+                ▲
+                </button>
+
+                <button
+                onclick="moveDown(
+                    '${trailerName}',
+                    ${index}
+                )"
+                >
+                ▼
+                </button>
+
+                <button
+                class="removeButton"
+                onclick="removeStore(
+                    '${store["STORE #"]}'
+                )"
+                >
+                ❌
+                </button>
+
+                <a
+                class="mapLink"
+                target="_blank"
+                href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address"")}"
+                >
+                📍
+                </a>
+
+                </div>
+
+                </div>
+
+                `;
+
+            }
+        );
+
+        const routeAddresses=
+        trailerStores
+        .map(store=>
+            encodeURIComponent(
+                store.ADDRESS||""
+            )
+        )
+        .join("/");
+
+        const route=
+        "https://www.google.com/maps/dir/"
+        +
+        routeAddresses;
+
+        html+=`
+
+        <div class="
+        trailer
+        ${over ? "over" : ""}
+        ">
+
+        <h3>${trailerName}</h3>
+
+        <div class="settingsRow">
+
+        <label>
+        Space limit:
+        </label>
+
+        <input
+        class="smallInput"
+        type="number"
+        min="1"
+        step="0.5"
+        value="${config.spaceLimit}"
+        onchange="updateTrailerSpaceLimit(
+            ${t},
+            this.value
+        )"
+        >
+
+        <label>
+        Weight limit:
+        </label>
+
+        <input
+        class="weightInput"
+        type="number"
+        min="1"
+        step="500"
+        value="${config.weightLimit}"
+        onchange="updateTrailerWeightLimit(
+            ${t},
+            this.value
+        )"
+        >
+
+        <button
+        class="deleteButton"
+        onclick="deleteTrailer(${t})"
+        >
+        Delete Trailer
+        </button>
+
+        </div>
+
+        ${
+            over
+            ?
+            `
+            <div class="overBadge">
+            ⚠ OVER CAPACITY
+            </div>
+            `
+            :
+            ""
+        }
+
+        <div class="capacityGrid">
+
+        <div class="capacityBox">
+
+        <b>Stores</b>
+
+        <br>
+
+        ${trailerStores.length}
+
+        </div>
+
+        <div class="capacityBox">
+
+        <b>Spaces</b>
+
+        <br>
+
+        ${spaces.toFixed(1)}
+        /
+        ${config.spaceLimit}
+
+        </div>
+
+        <div class="capacityBox">
+
+        <b>Weight</b>
+
+        <br>
+
+        ${Math.round(weight)}
+        /
+        ${config.weightLimit}
+
+        </div>
+
+        <div class="capacityBox">
+
+        <b>Remaining</b>
+
+        <br>
+
+        ${remainingSpaces.toFixed(1)}
+        spaces
+
+        <br>
+
+        ${Math.round(
+            remainingWeight
+        )}
+        lbs
+
+        </div>
+
+        </div>
+
+        ${
+            trailerStores.length>0
+            ?
+            `
+            <div class="regionSummary">
+
+            <b>
+            Geographic Groups
+            </b>
+
+            <br>
+
+            ${
+                regionHtml
+                ||
+                "No region information"
+            }
+
+            </div>
+
+            ${outlierSummary}
+
+            ${route}
+            🗺 Open Route
+            </a>
+
+            <hr>
+
+            ${details}
+            `
+            :
+            `
+            <div class="emptyMessage">
+            No stores assigned.
+            </div>
+            `
+        }
+
+        </div>
+
+        `;
+
+    }
+
+    document
+    .getElementById(
+        "trailers"
+    )
+    .innerHTML=
+    html;
+
+}
+
+function findBestNextStore(){
+
+    const unassigned=
+    stores.filter(store=>
+        store.TRAILER===
+        "Unassigned"
+    );
+
+    if(
+        unassigned.length===0
+    ){
+
+        return null;
+
+    }
+
+    let best=null;
+
+    let bestScore=
+    -Infinity;
+
+    for(
+        let t=1;
+        t<=trailerCount;
+        t++
+    ){
+
+        const config=
+        getTrailerConfig(t);
+
+        const trailerStores=
+        stores.filter(store=>
+            store.TRAILER===
+            "Trailer "+t
+        );
+
+        let usedSpaces=0;
+
+        let usedWeight=0;
+
+        const regionCounts={};
+
+        trailerStores.forEach(store=>{
+
+            usedSpaces+=
+            Number(store.SPACES)||0;
+
+            usedWeight+=
+            Number(store.WEIGHT)||0;
+
+            const region=
+            getRegion(
+                store.ADDRESS
+            );
+
+            regionCounts[region]=
+            (
+                regionCounts[region]
+                ||0
+            )+1;
+
+        });
+
+        unassigned.forEach(store=>{
+
+            const storeSpaces=
+            Number(store.SPACES)||0;
+
+            const storeWeight=
+            Number(store.WEIGHT)||0;
+
+            if(
+                usedSpaces+
+                storeSpaces>
+                config.spaceLimit
+                ||
+                usedWeight+
+                storeWeight>
+                config.weightLimit
+            ){
+
+                return;
+
+            }
+
+            const region=
+            getRegion(
+                store.ADDRESS
+            );
+
+            const regionMatch=
+            regionCounts[region]
+            ||0;
+
+            const score=
+            regionMatch*100
+            +
+            storeSpaces;
+
+            if(score>bestScore){
+
+                bestScore=score;
+
+                best={
+                    store,
+                    trailer:t,
+                    regionMatch
+                };
+
+            }
+
+        });
+
+    }
+
+    return best;
 
 }
 
 function drawAssistant(){
 
-if(stores.length===0){
+    const holder=
+    document
+    .getElementById(
+        "assistantContent"
+    );
 
-document.getElementById(
-"assistantContent"
-).innerHTML=
-"Upload a file to begin analysis.";
+    if(stores.length===0){
 
-return;
+        holder.innerHTML=
+        "Upload an Excel file to begin.";
+
+        return;
+
+    }
+
+    const unassigned=
+    stores.filter(store=>
+        store.TRAILER===
+        "Unassigned"
+    );
+
+    const overloaded=[];
+
+    let bestTrailer=null;
+
+    let bestSpaceRemaining=
+    -Infinity;
+
+    for(
+        let t=1;
+        t<=trailerCount;
+        t++
+    ){
+
+        const config=
+        getTrailerConfig(t);
+
+        const trailerStores=
+        stores.filter(store=>
+            store.TRAILER===
+            "Trailer "+t
+        );
+
+        const spaces=
+        trailerStores.reduce(
+            (sum,store)=>
+            sum+
+            (Number(store.SPACES)||0),
+            0
+        );
+
+        const weight=
+        trailerStores.reduce(
+            (sum,store)=>
+            sum+
+            (Number(store.WEIGHT)||0),
+            0
+        );
+
+        if(
+            spaces>config.spaceLimit
+            ||
+            weight>config.weightLimit
+        ){
+
+            overloaded.push(
+                "Trailer "+t
+            );
+
+        }
+
+        const remaining=
+        config.spaceLimit-
+        spaces;
+
+        if(
+            remaining>
+            bestSpaceRemaining
+        ){
+
+            bestSpaceRemaining=
+            remaining;
+
+            bestTrailer=t;
+
+        }
+
+    }
+
+    const next=
+    findBestNextStore();
+
+    const largestStore=
+    [...stores]
+    .sort(
+        (a,b)=>
+        (
+            Number(b.WEIGHT)||0
+        )
+        -
+        (
+            Number(a.WEIGHT)||0
+        )
+    )[0];
+
+    holder.innerHTML=`
+
+    <div class="assistantGrid">
+
+    <div class="assistantItem">
+
+    <div class="assistantTitle">
+    Capacity Status
+    </div>
+
+    ${
+        overloaded.length===0
+        ?
+        "✅ All assigned trailers are within their configured limits."
+        :
+        "⚠ Over capacity: "+
+        overloaded.join(", ")
+    }
+
+    </div>
+
+    <div class="assistantItem">
+
+    <div class="assistantTitle">
+    Unassigned
+    </div>
+
+    ${unassigned.length}
+    store(s)
+
+    </div>
+
+    <div class="assistantItem">
+
+    <div class="assistantTitle">
+    Most Available Space
+    </div>
+
+    Trailer ${bestTrailer}
+
+    <br>
+
+    ${bestSpaceRemaining.toFixed(1)}
+    spaces remaining
+
+    </div>
+
+    <div class="assistantItem">
+
+    <div class="assistantTitle">
+    Suggested Next Store
+    </div>
+
+    ${
+        next
+        ?
+        `
+        ${next.store.NAME}
+        #${next.store["STORE #"]}
+
+        <br>
+
+        Add to Trailer
+        ${next.trailer}
+
+        <br>
+
+        ${
+            next.regionMatch>0
+            ?
+            "Matches an existing geographic group."
+            :
+            "Fits capacity; no matching region currently assigned."
+        }
+        `
+        :
+        (
+            unassigned.length===0
+            ?
+            "All stores assigned."
+            :
+            "No unassigned store fits the current capacities."
+        )
+    }
+
+    </div>
+
+    <div class="assistantItem">
+
+    <div class="assistantTitle">
+    Largest Store
+    </div>
+
+    ${largestStore.NAME}
+
+    <br>
+
+    ${Number(
+        largestStore.SPACES
+    )||0}
+    spaces
+
+    <br>
+
+    ${Number(
+        largestStore.WEIGHT
+    )||0}
+    lbs
+
+    </div>
+
+    </div>
+
+    `;
 
 }
- let largestStore=
-[...stores]
-.sort(
-(a,b)=>
-(Number(b.WEIGHT)||0)
--
-(Number(a.WEIGHT)||0)
-)[0];
 
-let bestTrailer="";
-let bestRemaining=-1;
+getTrailerConfig(1);
 
-for(let t=1;t<=trailerCount;t++){
-
-let trailerStores=
-stores.filter(
-s=>s.TRAILER==="Trailer "+t
-);
-
-let spaces=0;
-
-trailerStores.forEach(s=>{
-spaces+=Number(s.SPACES)||0;
-});
-
-let remaining=
-24-spaces;
-
-if(remaining>bestRemaining){
-
-bestRemaining=remaining;
-bestTrailer="Trailer "+t;
-
-}
-
-}
-
-let suggestion=
-stores.find(
-s=>s.TRAILER==="Unassigned"
-);
-
-document.getElementById(
-"assistantContent"
-).innerHTML=
-
-`
-
-<div class="assistantGood">
-
-🚛 Best Trailer To Fill
-
-<br>
-
-${bestTrailer}
-
-<br><br>
-
-Remaining Space:
-${bestRemaining.toFixed(1)}
-
-</div>
-
-<br>
-
-🏋 Largest Store
-
-<br>
-
-${largestStore.NAME}
-
-<br>
-
-${largestStore.WEIGHT} lbs
-
-<br><br>
-
-📍 Suggested Next Store
-
-<br>
-
-${
-suggestion
-?
-suggestion.NAME
-:
-"All stores assigned"
-}
-
-<br><br>
-
-<div class="assistantWarn">
-
-⚠ Potential Outlier
-
-<br>
-
-${largestStore.NAME}
-
-</div>
-
-`;
-
-}
-
-drawTrailers();
-drawAssistant();
+drawEverything();
 
 </script>
 
 </body>
+
 </html>
-  
