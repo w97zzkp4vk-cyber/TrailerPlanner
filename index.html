@@ -282,6 +282,7 @@ let sorted=[
 (Number(b.WEIGHT)||0)
 -
 (Number(a.WEIGHT)||0)
+
 );
 
 farthestStore=
@@ -319,7 +320,7 @@ ${farthestStore}
 
 <br><br>
 
-${routeUrl}
+<a href="${routeUrl}" target="_blank">
 🗺 Open Route
 </a>
 
@@ -340,66 +341,10 @@ document.getElementById(
 }
 
 
-let html="";
 
-for(let t=1;t<=trailerCount;t++){
 
-let spaces=0;
-let weight=0;
-let count=0;
 
-stores.forEach(s=>{
 
-if(s.TRAILER==="Trailer "+t){
-
-spaces+=Number(s.SPACES)||0;
-
-weight+=Number(s.WEIGHT)||0;
-
-count++;
-
-}
-
-});
-
-let over=
-spaces>24 ||
-weight>35000;
-
-html+=`
-<div class="
-trailer
-summary
-${over?"over":""}
-">
-
-<b>Trailer ${t}</b>
-
-<br>
-
-Stores:
-${count}
-
-<br>
-
-Spaces:
-${spaces.toFixed(1)}
-/24
-
-<br>
-
-Weight:
-${Math.round(weight)}
-/35000 lbs
-
-</div>
-`;
-
-}
-
-document.getElementById('trailers').innerHTML=html;
-
-}
 
 drawTrailers();
 
