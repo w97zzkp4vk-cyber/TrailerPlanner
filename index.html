@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Trailer Planner Lite</title>
+<title>Trailer Planner Pro</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">\</script>
 
@@ -14,6 +14,11 @@ body{
     font-family:Arial,sans-serif;
     margin:10px;
     background:#f5f5f5;
+}
+
+button,input,select{
+    padding:8px;
+    margin:4px;
 }
 
 .store{
@@ -43,9 +48,14 @@ body{
     margin-top:5px;
 }
 
-button,input,select{
-    padding:8px;
-    margin:4px;
+.assistantGood{
+    color:green;
+    font-weight:bold;
+}
+
+.assistantWarn{
+    color:red;
+    font-weight:bold;
 }
 
 </style>
@@ -53,7 +63,19 @@ button,input,select{
 
 <body>
 
-<h1>Trailer Planner Lite</h1>
+<h1>Trailer Planner Pro</h1>
+
+<div class="trailer">
+
+<h2>🚛 Route Assistant</h2>
+
+<div id="assistantContent">
+
+Upload a file to begin analysis.
+
+</div>
+
+</div>
 
 <input type="file" id="file">
 
@@ -73,16 +95,19 @@ onkeyup="drawStores()"
 <hr>
 
 <h2>Unassigned Stores</h2>
+
 <div id="unassigned"></div>
 
 <hr>
 
-<h2>Trailer Summary</h2>
+<h2>Trailers</h2>
+
 <div id="trailers"></div>
 
 <hr>
 
 <h2>All Stores</h2>
+
 <div id="stores"></div>
 
 <script>
@@ -96,271 +121,410 @@ document
 
 function loadFile(e){
 
-    const file=e.target.files[0];
+const file=e.target.files[0];
 
-    const reader=new FileReader();
+const reader=new FileReader();
 
-    reader.onload=function(evt){
+ reader.onload=function(evt){
 
-        const workbook=XLSX.read(
-            evt.target.result,
-            {type:"binary"}
-        );
+const workbook=XLSX.read(
+evt.target.result,
+{type:"binary"}
+);
 
-        const sheet=
-        workbook.Sheets[
-            workbook.SheetNames[0]
-        ];
+const sheet=
+workbook.Sheets[
+workbook.SheetNames[0]
+];
 
-        stores=
-        XLSX.utils.sheet_to_json(sheet);
+stores=
+XLSX.utils.sheet_to_json(sheet);
 
-        stores.forEach(s=>{
-            s.TRAILER="Unassigned";
-        });
+stores.forEach(s=>{
+s.TRAILER="Unassigned";
+});
 
-        drawStores();
-        drawTrailers();
-    };
+drawStores();
+drawTrailers();
+drawAssistant();
 
-    reader.readAsBinaryString(file);
+};
+
+reader.readAsBinaryString(file);
+
 }
 
 function addTrailer(){
 
-    trailerCount++;
+trailerCount++;
 
-    drawStores();
-    drawTrailers();
+drawStores();
+drawTrailers();
+drawAssistant();
+
 }
 
 function trailerOptions(current){
 
-    let html=
-    `<option ${
-    current==="Unassigned"
-    ?"selected":""
-    }>Unassigned</option>`;
+let html=
+`<option ${
+current==="Unassigned"
+?"selected":""
+}>Unassigned</option>`;
 
-    for(let i=1;i<=trailerCount;i++){
+for(let i=1;i<=trailerCount;i++){
 
-        html+=`
-        <option ${
-        current===("Trailer "+i)
-        ?"selected":""
-        }>
-        Trailer ${i}
-        </option>`;
-    }
+html+=`
+<option ${
+current===("Trailer "+i)
+?"selected":""
+}>
+Trailer ${i}
+</option>`;
 
-    return html;
+}
+
+return html;
+
 }
 
 function drawStores(){
 
-    let search=
-    document
-    .getElementById("search")
-    .value
-    .toLowerCase();
+let search=
+document
+.getElementById("search")
+.value
+.toLowerCase();
 
-    let allHtml="";
-    let unassignedHtml="";
+let allHtml="";
+let unassignedHtml="";
 
-    stores.forEach((s,index)=>{
+stores.forEach((s,index)=>{
 
-        let name=s.NAME || "";
-        let store=s["STORE #"] || "";
-        let address=s.ADDRESS || "";
+let name=s.NAME || "";
+let store=s["STORE #"] || "";
+let address=s.ADDRESS || "";
 
-        let match=
-        name.toLowerCase().includes(search)
-        ||
-        String(store).includes(search);
+let match=
+name.toLowerCase().includes(search)
+||
+String(store).includes(search);
 
-        if(!match) return;
-
-        let card=`
-
-        <div class="store">
-
-        <b>${name}</b><br>
-
-        Store # ${store}<br>
-
-        Spaces: ${s.SPACES || 0}<br>
-
-        Weight: ${s.WEIGHT || 0}<br>
-
-        Assigned To:
-        ${s.TRAILER}
-
-        <br><br>
-
-        <select
-        onchange="
-        stores[${index}].TRAILER=this.value;
-        drawStores();
-        drawTrailers();
-        "
-        >
-        ${trailerOptions(s.TRAILER)}
-        </select>
-
-        <a
-        href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}"
-        target="_blank"
-        >
-        📍 Map
-        </a>
-
-        </div>
-        `;
-
-        allHtml += card;
-
-        if(s.TRAILER==="Unassigned"){
-            unassignedHtml += card;
-        }
-
-    });
-
-    document.getElementById("stores").innerHTML =
-    allHtml;
-
-    document.getElementById("unassigned").innerHTML =
-    unassignedHtml;
+if(!match){
+return;
 }
 
-function drawTrailers(){
+let card=`
 
-    let html="";
+<div class="store">
 
-    for(let t=1;t<=trailerCount;t++){
+<b>${name}</b><br>
 
-        let trailerStores=
-        stores.filter(
-        s=>s.TRAILER==="Trailer "+t
-        );
+Store # ${store}<br>
 
-        if(trailerStores.length===0){
-            continue;
-        }
+Spaces: ${s.SPACES || 0}<br>
 
-        let spaces=0;
-        let weight=0;
+Weight: ${s.WEIGHT || 0}<br>
 
-        trailerStores.forEach(s=>{
+Assigned To:
+${s.TRAILER}
 
-            spaces +=
-            Number(s.SPACES) || 0;
+<br><br>
 
-            weight +=
-            Number(s.WEIGHT) || 0;
-        });
+<select
+onchange="
+stores[${index}].TRAILER=this.value;
+drawStores();
+drawTrailers();
+drawAssistant();
+"
+>
 
-        let over=
-        spaces>24 ||
-        weight>35000;
+${trailerOptions(s.TRAILER)}
 
-        let remainingSpaces=
-        (24-spaces).toFixed(1);
+</select>
 
-        let remainingWeight=
-        Math.round(35000-weight);
+"
+target="_blank"
+>
 
-        let details="";
+📍 Map
 
-        trailerStores.forEach(s=>{
+</a>
 
-            details += `
-            <div class="storeItem">
+</div>
 
-            <b>${s.NAME}</b><br>
+`;
 
-            Store # ${s["STORE #"]}<br>
+allHtml+=card;
 
-            Spaces: ${s.SPACES}<br>
+if(s.TRAILER==="Unassigned"){
+unassignedHtml+=card;
+}
 
-            Weight: ${s.WEIGHT}
+});
 
-            </div>
-            `;
-        });
+document.getElementById(
+"stores"
+).innerHTML=allHtml;
 
-        let route=
-        "https://www.google.com/maps/dir/" +
-        trailerStores
-        .map(
-        x=>
-        encodeURIComponent(
-        x.ADDRESS || ""
-        )
-        )
-        .join("/");
+document.getElementById(
+"unassigned"
+).innerHTML=unassignedHtml;
 
-        html += `
+}
 
-        <div class="
-        trailer
-        ${over ? "over" : ""}
-        ">
+ function drawTrailers(){
 
-        <h3>Trailer ${t}</h3>
+let html="";
 
-        Stores:
-        ${trailerStores.length}
+for(let t=1;t<=trailerCount;t++){
 
-        <br>
+let trailerStores=
+stores.filter(
+s=>s.TRAILER==="Trailer "+t
+);
 
-        Spaces:
-        ${spaces.toFixed(1)}
-        /24
+if(trailerStores.length===0){
+continue;
+}
 
-        <br>
+let spaces=0;
+let weight=0;
 
-        Weight:
-        ${Math.round(weight)}
-        /35000 lbs
+trailerStores.forEach(s=>{
 
-        <br><br>
+spaces+=Number(s.SPACES)||0;
+weight+=Number(s.WEIGHT)||0;
 
-        Remaining:
+});
 
-        <br>
+let remainingSpaces=
+(24-spaces).toFixed(1);
 
-        ${remainingSpaces}
-        Spaces
+let remainingWeight=
+Math.round(35000-weight);
 
-        <br>
+let over=
+spaces>24 ||
+weight>35000;
 
-        ${remainingWeight}
-        lbs
+let details="";
 
-        <br><br>
+trailerStores.forEach(s=>{
 
-        ${route}
+details+=`
 
-        🗺 Open Route
+<div class="storeItem">
 
-        </a>
+<b>${s.NAME}</b><br>
 
-        <hr>
+Store # ${s["STORE #"]}<br>
 
-        ${details}
+Spaces: ${s.SPACES}<br>
 
-        </div>
-        `;
-    }
+Weight: ${s.WEIGHT}
 
-    document
-    .getElementById("trailers")
-    .innerHTML=html;
+</div>
+
+`;
+
+});
+
+let route=
+"https://www.google.com/maps/dir/" +
+trailerStores
+.map(
+x=>encodeURIComponent(
+x.ADDRESS||""
+)
+)
+.join("/");
+
+html+=`
+
+<div class="
+trailer
+${over?"over":""}
+">
+
+<h3>Trailer ${t}</h3>
+
+Stores:
+${trailerStores.length}
+
+<br>
+
+Spaces:
+${spaces.toFixed(1)}
+/24
+
+<br>
+
+Weight:
+${Math.round(weight)}
+/35000 lbs
+
+<br><br>
+
+Remaining:
+
+<br>
+
+${remainingSpaces}
+Spaces
+
+<br>
+
+${remainingWeight}
+lbs
+
+<br><br>
+
+${route}
+
+🗺 Open Route
+
+</a>
+
+<hr>
+
+${details}
+
+</div>
+
+`;
+
+}
+
+document
+.getElementById("trailers")
+.innerHTML=html;
+
+}
+
+function drawAssistant(){
+
+if(stores.length===0){
+
+document.getElementById(
+"assistantContent"
+).innerHTML=
+"Upload a file to begin analysis.";
+
+return;
+
+}
+ let largestStore=
+[...stores]
+.sort(
+(a,b)=>
+(Number(b.WEIGHT)||0)
+-
+(Number(a.WEIGHT)||0)
+)[0];
+
+let bestTrailer="";
+let bestRemaining=-1;
+
+for(let t=1;t<=trailerCount;t++){
+
+let trailerStores=
+stores.filter(
+s=>s.TRAILER==="Trailer "+t
+);
+
+let spaces=0;
+
+trailerStores.forEach(s=>{
+spaces+=Number(s.SPACES)||0;
+});
+
+let remaining=
+24-spaces;
+
+if(remaining>bestRemaining){
+
+bestRemaining=remaining;
+bestTrailer="Trailer "+t;
+
+}
+
+}
+
+let suggestion=
+stores.find(
+s=>s.TRAILER==="Unassigned"
+);
+
+document.getElementById(
+"assistantContent"
+).innerHTML=
+
+`
+
+<div class="assistantGood">
+
+🚛 Best Trailer To Fill
+
+<br>
+
+${bestTrailer}
+
+<br><br>
+
+Remaining Space:
+${bestRemaining.toFixed(1)}
+
+</div>
+
+<br>
+
+🏋 Largest Store
+
+<br>
+
+${largestStore.NAME}
+
+<br>
+
+${largestStore.WEIGHT} lbs
+
+<br><br>
+
+📍 Suggested Next Store
+
+<br>
+
+${
+suggestion
+?
+suggestion.NAME
+:
+"All stores assigned"
+}
+
+<br><br>
+
+<div class="assistantWarn">
+
+⚠ Potential Outlier
+
+<br>
+
+${largestStore.NAME}
+
+</div>
+
+`;
+
 }
 
 drawTrailers();
+drawAssistant();
 
 </script>
 
 </body>
 </html>
+  
